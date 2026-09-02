@@ -223,6 +223,9 @@
 <div id="toast"><span id="toastmsg"></span><button id="toastundo">Undo</button></div>
 <canvas id="confetti"></canvas>
 <script>
+window.__booterr = null;
+window.onerror = function(msg, src, l, c) { window.__booterr = msg + ' @' + l + ':' + c; var u = document.querySelector('#updated'); if (u && !window.DATA) u.textContent = 'Boot error: ' + window.__booterr; };
+
 const DATA_URL = 'd.json'; // same-origin ciphertext; key arrives in URL fragment (#k=...)
 async function loadKey() {
   const m = location.hash.match(/k=([A-Za-z0-9_-]+)/);
