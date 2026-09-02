@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#08080a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex, nofollow">
+<title>Mission Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080a;
+    --card: rgba(255,255,255,0.028);
+    --card-border: rgba(255,255,255,0.065);
+    --text: #f4f4f5; --text2: #9d9da8; --text3: #5c5c66;
+    --waiting: #fbbf24; --progress: #6ea8fe; --remind: #b79ffd; --docs: #4ade80; --done: #63636e; --watching: #38bdf8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--bg); }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    -webkit-font-smoothing: antialiased; overscroll-behavior-y: none;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(600px 340px at 50% -80px, rgba(110,168,254,0.07), transparent 70%),
+      radial-gradient(500px 300px at 85% 0%, rgba(183,159,253,0.05), transparent 70%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 0 18px calc(48px + env(safe-area-inset-bottom)); }
+
+  #ptr { position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-46px); z-index: 60; transition: transform .28s cubic-bezier(.2,.9,.3,1.2); }
+  #ptr.on { transform: translateX(-50%) translateY(0); }
+  #ptr .pill { width: 34px; height: 34px; border-radius: 50%; background: #17171c; border: 1px solid var(--card-border); display: grid; place-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+  #ptr .spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.14); border-top-color: #d4d4d8; animation: rot .7s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  header { padding: calc(30px + env(safe-area-inset-top)) 2px 4px; display: flex; align-items: center; justify-content: space-between; }
+  .title-block { display: flex; align-items: center; gap: 11px; }
+  .mark { width: 34px; height: 34px; border-radius: 10px; flex: 0 0 auto;
+    background: linear-gradient(140deg, #23232b 0%, #101014 100%);
+    border: 1px solid rgba(255,255,255,.09);
+    display: grid; place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 14px rgba(0,0,0,.4); }
+  .mark svg { width: 17px; height: 17px; }
+  h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.025em; }
+  .live { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; letter-spacing: .12em; color: #4ade80; padding: 5px 10px; border: 1px solid rgba(74,222,128,.18); background: rgba(74,222,128,.06); border-radius: 999px; transition: all .3s; }
+  .live .dot { width: 5px; height: 5px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80; animation: pulse 2.2s ease-in-out infinite; }
+  .live.fresh { color: #a7f3d0; border-color: rgba(74,222,128,.45); background: rgba(74,222,128,.13); }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.8); } }
+  .digest { font-size: 12.5px; color: var(--text2); padding: 8px 2px 2px; font-weight: 480; letter-spacing: -0.005em; }
+  .updated { font-size: 11.5px; color: var(--text3); padding: 4px 2px 12px; cursor: pointer; font-weight: 450; }
+  .updated:active { color: var(--text2); }
+
+  #away { display: none; margin: 4px 0 14px; padding: 12px 15px; border-radius: 14px; cursor: pointer;
+    background: linear-gradient(135deg, rgba(110,168,254,.10), rgba(183,159,253,.08));
+    border: 1px solid rgba(110,168,254,.22);
+    font-size: 13px; font-weight: 500; color: #c7d7f5; line-height: 1.45;
+    animation: rise .5s cubic-bezier(.2,.8,.3,1) backwards; }
+  #away .sub { display: block; font-size: 11.5px; color: var(--text2); font-weight: 450; margin-top: 3px; }
+
+  .searchbox { position: sticky; top: 0; z-index: 30; padding: 4px 0 10px; background: linear-gradient(var(--bg) 78%, transparent); }
+  .searchbox .in { position: relative; }
+  .searchbox svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; opacity: .45; pointer-events: none; }
+  .searchbox input { width: 100%; background: var(--card); border: 1px solid var(--card-border); border-radius: 13px;
+    padding: 11.5px 14px 11.5px 37px; color: var(--text); font-size: 14.5px; font-family: inherit; outline: none;
+    transition: border-color .15s, background .15s; }
+  .searchbox input::placeholder { color: var(--text3); }
+  .searchbox input:focus { border-color: rgba(255,255,255,.16); background: rgba(255,255,255,.045); }
+
+  .chips { display: flex; gap: 7px; overflow-x: auto; padding: 2px 0 8px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chips.areas { padding-bottom: 14px; }
+  .chip { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 7.5px 13px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 550; letter-spacing: -0.005em;
+    background: var(--card); border: 1px solid var(--card-border); color: var(--text2); cursor: pointer;
+    transition: all .18s cubic-bezier(.3,.7,.4,1); user-select: none; }
+  .chip .n { font-size: 11px; font-weight: 600; color: var(--text3); font-variant-numeric: tabular-nums; background: rgba(255,255,255,.05); padding: 1px 6px; border-radius: 6px; }
+  .chip .cdot { width: 6px; height: 6px; border-radius: 50%; }
+  .chip.active { background: #ececef; color: #0a0a0c; border-color: transparent; }
+  .chip.active .n { background: rgba(0,0,0,.09); color: #3f3f46; }
+  .chip:active { transform: scale(.96); }
+  .chip.area { font-size: 11.5px; padding: 6px 11px; color: var(--text3); }
+  .chip.area.active { background: rgba(255,255,255,.12); color: var(--text); border-color: rgba(255,255,255,.2); }
+
+  section { margin-bottom: 30px; }
+  .sect-label { display: flex; align-items: center; gap: 8px; margin: 0 3px 11px; }
+  .sect-label .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .sect-label .name { font-size: 11px; font-weight: 650; letter-spacing: .11em; text-transform: uppercase; color: var(--text2); }
+  .sect-label .count { font-size: 11px; font-weight: 550; color: var(--text3); font-variant-numeric: tabular-nums; }
+  .sortbtn { margin-left: auto; display: flex; align-items: center; gap: 4px; background: none; border: none; color: var(--text3); font-size: 10.5px; font-weight: 550; font-family: inherit; cursor: pointer; padding: 3px 6px; border-radius: 6px; letter-spacing: .03em; }
+  .sortbtn:active { background: rgba(255,255,255,.07); }
+  .sortbtn svg { width: 10px; height: 10px; opacity: .7; }
+
+  .card-wrap { position: relative; margin-bottom: 9px; overflow: hidden; border-radius: 15px; }
+  .card { display: block; position: relative; background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 15px; padding: 14px 16px;
+    text-decoration: none; color: inherit; cursor: pointer;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    transition: background .15s, border-color .15s, transform .18s, opacity .18s;
+    animation: rise .38s cubic-bezier(.2,.8,.3,1) backwards;
+    touch-action: pan-y; }
+  .card:nth-child(2) { animation-delay: .03s; } .card:nth-child(3) { animation-delay: .06s; }
+  .card:nth-child(4) { animation-delay: .09s; } .card:nth-child(5) { animation-delay: .12s; }
+  .card:nth-child(n+6) { animation-delay: .15s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+  .card.leaving { transition: transform .22s ease-in, opacity .22s ease-in; transform: translateX(-110%); opacity: 0; }
+  .card .t { padding-right: 20px; font-size: 14px; font-weight: 550; line-height: 1.38; letter-spacing: -0.012em; }
+  .card .d { font-size: 12.5px; color: var(--text2); line-height: 1.5; margin-top: 5px; font-weight: 420;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card .meta { display: flex; align-items: center; gap: 8px; margin-top: 9px; font-size: 11px; color: var(--text3); font-weight: 500; }
+  .card .meta .r { margin-left: auto; }
+  .tag { padding: 2.5px 8px; border-radius: 7px; background: rgba(255,255,255,.055); font-weight: 550; font-size: 10.5px; letter-spacing: .01em; }
+  .card .ext { position: absolute; top: 15px; right: 15px; opacity: .35; }
+  .card .ext svg { width: 13px; height: 13px; display: block; }
+  footer a svg { width: 11px; height: 11px; display: inline-block; vertical-align: -1px; margin-left: 3px; }
+
+  .prog-dot { flex: 0 0 auto; width: 6px; height: 6px; border-radius: 50%; background: var(--progress); box-shadow: 0 0 7px rgba(110,168,254,.8); animation: pulse 1.8s ease-in-out infinite; }
+  .prog-row { display: flex; align-items: center; gap: 8px; }
+
+  .done-card { opacity: .55; }
+  .done-card .t { color: var(--text2); }
+  .done-card .t::before { content: '✓ '; color: #4ade80; font-weight: 600; }
+  .hidden-card { opacity: .5; }
+  .hidden-card .t { color: var(--text3); text-decoration: line-through; text-decoration-color: #3f3f46; }
+  .restore { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); font-size: 11.5px; font-weight: 600; color: var(--text2); padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.07); }
+
+  .swipe-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 22px;
+    background: linear-gradient(90deg, transparent, rgba(244,63,94,.14)); color: #fb7185; font-size: 11.5px; font-weight: 600; letter-spacing: .06em;
+    opacity: 0; transition: opacity .12s; border-radius: 15px; }
+  .swipe-hint.left { justify-content: flex-start; padding-left: 22px; padding-right: 0; background: linear-gradient(-90deg, transparent, rgba(244,63,94,.14)); }
+
+  .empty { font-size: 12.5px; color: var(--text3); padding: 18px 4px; font-weight: 450; text-align: center; }
+  .empty .big { display: block; font-size: 14px; color: var(--text2); font-weight: 550; margin-bottom: 4px; }
+
+  footer { text-align: center; padding: 26px 0 10px; }
+  footer a { font-size: 12.5px; font-weight: 500; color: var(--text2); text-decoration: none; padding: 9px 16px; border: 1px solid var(--card-border); border-radius: 999px; background: var(--card); display: inline-block; }
+  footer a:active { background: rgba(255,255,255,.06); }
+  #err { display: none; margin: 4px 0 16px; padding: 11px 15px; border: 1px solid rgba(248,113,113,.22); background: rgba(248,113,113,.07); color: #fca5a5; border-radius: 13px; font-size: 12.5px; font-weight: 500; }
+
+  #toast { position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(80px); z-index: 70;
+    display: flex; align-items: center; gap: 12px; background: #1c1c22; border: 1px solid rgba(255,255,255,.1);
+    padding: 11px 16px; border-radius: 13px; font-size: 13px; font-weight: 500; box-shadow: 0 10px 32px rgba(0,0,0,.55);
+    transition: transform .3s cubic-bezier(.2,.9,.3,1.15); max-width: 90vw; }
+  #toast.on { transform: translateX(-50%) translateY(0); }
+  #toast button { background: none; border: none; color: #6ea8fe; font-size: 13px; font-weight: 650; font-family: inherit; cursor: pointer; padding: 2px 4px; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 65; }
+</style>
+</head>
+<body>
+<div id="ptr"><div class="pill"><div class="spin"></div></div></div>
+<div class="wrap">
+  <header>
+    <div class="title-block">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></div>
+      <h1>Mission Control</h1>
+    </div>
+    <div class="live" id="livepill"><span class="dot"></span>LIVE</div>
+  </header>
+  <div class="digest" id="digest"></div>
+  <div class="updated" id="updated">Syncing…</div>
+  <div id="away"></div>
+  <div class="searchbox"><div class="in">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#9d9da8" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+  </div></div>
+  <div class="chips" id="chips"></div>
+  <div class="chips areas" id="areachips"></div>
+  <div id="err"></div>
+  <main id="main"></main>
+  <footer id="foot"></footer>
+</div>
+<div id="toast"><span id="toastmsg"></span><button id="toastundo">Undo</button></div>
+<canvas id="confetti"></canvas>
+<script>
+const DATA_URL = 'https://mc-fb9dcbda391a6168.netlify.app/data.json';
+let DATA = null, FILTER = 'all', AREA = 'all', QUERY = '';
+let HIDDEN = new Set(JSON.parse(localStorage.getItem('mc_hidden') || '[]'));
+let SORTS = JSON.parse(localStorage.getItem('mc_sorts') || '{}');
+let lastDataUpdated = null;
+const $ = s => document.querySelector(s);
+const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const EXT = '<svg viewBox="0 0 24 24" fill="none" stroke="#9d9da8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>';
+const SORTICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>';
+
+function rel(ts) {
+  if (!ts) return '';
+  const d = new Date(ts), s = (Date.now() - d.getTime())/1000;
+  const fut = s < 0, a = Math.abs(s);
+  const f = (v,u) => { v = Math.round(v); return v + u; };
+  let str;
+  if (a < 90) return 'just now';
+  else if (a < 3600) str = f(a/60,'m');
+  else if (a < 86400) str = f(a/3600,'h');
+  else str = f(a/86400,'d');
+  return fut ? 'in ' + str : str + ' ago';
+}
+function absTime(ts) {
+  const d = new Date(ts), today = new Date(), tom = new Date(Date.now() + 864e5);
+  const same = (a,b) => a.toDateString() === b.toDateString();
+  const t = d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  if (same(d, today)) return 'Today ' + t;
+  if (same(d, tom)) return 'Tmrw ' + t;
+  return d.toLocaleDateString([], {month:'short', day:'numeric'}) + ', ' + t;
+}
+const itemId = (sec, t) => sec + ':' + (t.id || t.url || t.name + '|' + (t.next_fire||''));
+const match = txt => !QUERY || txt.toLowerCase().includes(QUERY);
+const inArea = t => AREA === 'all' || (t.area || 'Life admin') === AREA;
+
+const SECTIONS = [
+  {key:'waiting',   label:'Waiting on you', color:'var(--waiting)', sortable:true},
+  {key:'progress',  label:'In progress',    color:'var(--progress)'},
+  {key:'watching',  label:'Watching',       color:'var(--watching)'},
+  {key:'reminders', label:'Reminders',      color:'var(--remind)'},
+  {key:'docs',      label:'Docs',           color:'var(--docs)', sortable:true},
+  {key:'done',      label:'Done',           color:'var(--done)', sortable:true},
+  {key:'hidden',    label:'Hidden',         color:'#71717a'},
+];
+const EMPTY = {
+  waiting: ['All clear', 'Nothing needs you right now.'],
+  progress: ['Quiet bench', 'No active one-off work at the moment.'],
+  watching: ['Nothing on watch', 'No standing monitors running.'],
+  reminders: ['No upcoming pings', 'Scheduled nudges will show here.'],
+  docs: ['No docs found', 'Your Drive docs will appear here.'],
+  done: ['Nothing landed yet', 'Finished work collects here.'],
+  hidden: ['Nothing hidden', 'Swipe a card away and it waits here.'],
+};
+
+function sortItems(key, items) {
+  const mode = SORTS[key] || 'new';
+  const ts = t => new Date(t.updated_at || t.created_at || t.modified || 0).getTime();
+  const arr = [...items];
+  if (mode === 'old') arr.sort((a,b) => ts(a) - ts(b));
+  else arr.sort((a,b) => ts(b) - ts(a));
+  return arr;
+}
+function cycleSort(key) {
+  const order = ['new','old'];
+  SORTS[key] = order[(order.indexOf(SORTS[key] || 'new') + 1) % order.length];
+  localStorage.setItem('mc_sorts', JSON.stringify(SORTS));
+  render();
+}
+
+function hide(sec, t, el) {
+  const id = itemId(sec, t);
+  HIDDEN.add(id);
+  localStorage.setItem('mc_hidden', JSON.stringify([...HIDDEN]));
+  if (navigator.vibrate) navigator.vibrate(8);
+  el.classList.add('leaving');
+  setTimeout(() => { render(); showToast('Hidden', () => { HIDDEN.delete(id); localStorage.setItem('mc_hidden', JSON.stringify([...HIDDEN])); render(); }); }, 210);
+}
+function restore(id) {
+  HIDDEN.delete(id);
+  localStorage.setItem('mc_hidden', JSON.stringify([...HIDDEN]));
+  if (navigator.vibrate) navigator.vibrate(6);
+  render();
+}
+
+let toastTimer = null;
+function showToast(msg, onUndo) {
+  $('#toastmsg').textContent = msg;
+  $('#toast').classList.add('on');
+  clearTimeout(toastTimer);
+  $('#toastundo').onclick = () => { $('#toast').classList.remove('on'); onUndo && onUndo(); };
+  toastTimer = setTimeout(() => $('#toast').classList.remove('on'), 3600);
+}
+
+// tiny sparkle burst (restrained)
+function sparkle(x, y) {
+  const c = $('#confetti'), ctx = c.getContext('2d');
+  c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const parts = Array.from({length: 14}, (_, i) => {
+    const a = (i / 14) * Math.PI * 2 + Math.random() * .5;
+    return {x, y, vx: Math.cos(a) * (1 + Math.random() * 2.2), vy: Math.sin(a) * (1 + Math.random() * 2.2) - 1.4, life: 1};
+  });
+  const colors = ['#4ade80', '#6ea8fe', '#b79ffd', '#fbbf24'];
+  let f = 0;
+  (function tick() {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    parts.forEach((p, i) => {
+      p.x += p.vx; p.y += p.vy; p.vy += .07; p.life -= .022;
+      if (p.life <= 0) return;
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = colors[i % 4];
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2.1, 0, 7); ctx.fill();
+    });
+    if (++f < 60) requestAnimationFrame(tick); else ctx.clearRect(0, 0, innerWidth, innerHeight);
+  })();
+}
+
+function cardSwipe(el, sec, t) {
+  let startX = null, curX = 0, hint = null;
+  el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
+  el.addEventListener('touchmove', e => {
+    if (startX === null) return;
+    curX = e.touches[0].clientX - startX;
+    if (Math.abs(curX) < 12) return;
+    if (!hint) { hint = document.createElement('div'); hint.className = 'swipe-hint' + (curX > 0 ? ' left' : ''); hint.textContent = 'HIDE'; el.parentElement.style.position = 'relative'; el.parentElement.appendChild(hint); }
+    el.style.transition = 'none';
+    el.style.transform = `translateX(${curX}px)`;
+    hint.style.opacity = Math.min(1, Math.abs(curX) / 80);
+  }, {passive: true});
+  el.addEventListener('touchend', () => {
+    if (hint) { hint.remove(); hint = null; }
+    el.style.transition = '';
+    if (Math.abs(curX) > 85) { hide(sec, t, el); }
+    else el.style.transform = '';
+    startX = null; curX = 0;
+  });
+}
+
+function render() {
+  if (!DATA) return;
+  const d = DATA;
+  const split = { progress: d.progress.filter(a => !a.standing), watching: d.progress.filter(a => a.standing) };
+  const sets = {
+    waiting: d.waiting, progress: split.progress, watching: split.watching,
+    reminders: d.reminders, docs: d.docs, done: d.done,
+    hidden: collectHidden(d),
+  };
+  const vis = k => sets[k].filter(t => !HIDDEN.has(itemId(k, t)));
+  const counts = { waiting: vis('waiting').length, progress: vis('progress').length, watching: vis('watching').length, reminders: vis('reminders').length, docs: vis('docs').length, done: vis('done').length, hidden: sets.hidden.length };
+  const total = counts.waiting + counts.progress + counts.watching + counts.reminders + counts.docs + counts.done;
+
+  $('#chips').innerHTML = [{key:'all',label:'All',n:total}, ...SECTIONS.map(s=>({key:s.key,label:s.label,n:counts[s.key],color:s.color}))]
+    .map(c => `<div class="chip ${FILTER===c.key?'active':''}" data-k="${c.key}">${c.color?`<span class="cdot" style="background:${c.color}"></span>`:''}${c.label}<span class="n">${c.n}</span></div>`).join('');
+  document.querySelectorAll('#chips .chip').forEach(el => el.onclick = () => { FILTER = el.dataset.k; render(); });
+
+  const areas = [...new Set([...d.waiting, ...d.progress, ...d.done].map(t => t.area || 'Life admin'))].sort();
+  $('#areachips').innerHTML = [{a:'all'}, ...areas.map(a => ({a}))]
+    .map(x => `<div class="chip area ${AREA===x.a?'active':''}" data-a="${esc(x.a)}">${x.a === 'all' ? 'All areas' : esc(x.a)}</div>`).join('');
+  document.querySelectorAll('#areachips .chip').forEach(el => el.onclick = () => { AREA = el.dataset.a; render(); });
+
+  let html = '';
+  const show = k => FILTER === 'all' || FILTER === k;
+  const sortLabel = k => (SORTS[k] || 'new') === 'new' ? 'NEWEST' : 'OLDEST';
+
+  if (show('waiting')) {
+    const items = sortItems('waiting', vis('waiting').filter(t => match(t.title + ' ' + (t.description||'')) && inArea(t)));
+    html += sect('waiting', counts.waiting, items.map(t => `
+      <div class="card" data-sec="waiting"><div class="t">${esc(t.title)}</div>
+      ${t.description ? `<div class="d">${esc(t.description)}</div>` : ''}
+      <div class="meta">${t.area ? `<span class="tag">${esc(t.area)}</span>` : ''}${t.blocked ? '<span class="tag" style="color:#fca5a5;background:rgba(248,113,113,.1)">Blocked</span>' : ''}<span class="r">added ${rel(t.created_at)}</span></div></div>`).join(''));
+  }
+  if (show('progress')) {
+    const items = vis('progress').filter(t => match(t.name + ' ' + (t.summary||'')) && inArea(t));
+    html += sect('progress', counts.progress, items.map(t => `
+      <div class="card" data-sec="progress"><div class="t prog-row"><span class="prog-dot"></span>${esc(t.name)}</div>
+      ${t.summary ? `<div class="d">${esc(t.summary)}</div>` : ''}
+      <div class="meta">${t.area ? `<span class="tag">${esc(t.area)}</span>` : ''}${t.next_fire ? `<span>Next check ${absTime(t.next_fire)}</span>` : '<span>Active now</span>'}</div></div>`).join(''));
+  }
+  if (show('watching')) {
+    const items = vis('watching').filter(t => match(t.name + ' ' + (t.summary||'')) && inArea(t));
+    html += sect('watching', counts.watching, items.map(t => `
+      <div class="card" data-sec="watching"><div class="t">${esc(t.name)}</div>
+      ${t.summary ? `<div class="d">${esc(t.summary)}</div>` : ''}
+      <div class="meta">${t.area ? `<span class="tag">${esc(t.area)}</span>` : ''}${t.next_fire ? `<span>Next check ${absTime(t.next_fire)}</span>` : '<span>Running</span>'}<span class="r"><span class="tag">Standing</span></span></div></div>`).join(''));
+  }
+  if (show('reminders')) {
+    const items = vis('reminders').filter(t => match(t.name) && inArea(t));
+    html += sect('reminders', counts.reminders, items.map(t => `
+      <div class="card" data-sec="reminders"><div class="t">${esc(t.name)}</div>
+      <div class="meta"><span style="color:var(--remind)">${absTime(t.next_fire)}</span><span class="r">${esc(t.cadence||'')}</span></div></div>`).join(''));
+  }
+  if (show('docs')) {
+    const items = sortItems('docs', vis('docs').filter(t => match(t.name + ' ' + (t.folder||'')) && inArea(t)));
+    html += sect('docs', counts.docs, items.map(t => `
+      <a class="card" data-sec="docs" href="${esc(t.url)}" target="_blank" rel="noopener"><span class="ext">${EXT}</span><div class="t">${esc(t.name)}</div>
+      <div class="meta"><span class="tag" style="color:var(--docs)">${esc(t.folder||'Drive')}</span><span class="r">edited ${rel(t.modified)}</span></div></a>`).join(''));
+  }
+  if (show('done')) {
+    const items = sortItems('done', vis('done').filter(t => match(t.title) && inArea(t)));
+    html += sect('done', counts.done, items.map(t => `
+      <div class="card done-card" data-sec="done"><div class="t">${esc(t.title)}</div>
+      <div class="meta">${t.area ? `<span class="tag">${esc(t.area)}</span>` : ''}<span class="r">${rel(t.updated_at)}</span></div></div>`).join(''));
+  }
+  if (show('hidden') && (FILTER === 'hidden')) {
+    html += sect('hidden', counts.hidden, sets.hidden.map(t => `
+      <div class="card hidden-card"><div class="t">${esc(t.title || t.name)}</div>
+      <div class="restore" data-restore="${esc(t._hid)}">Restore</div></div>`).join(''));
+  }
+  $('#main').innerHTML = html || '<div class="empty"><span class="big">Nothing matches</span>Try a different search or filter.</div>';
+  document.querySelectorAll('[data-restore]').forEach(el => el.onclick = () => restore(el.dataset.restore));
+
+  // wire swipes
+  const byId = {};
+  SECTIONS.forEach(s => (sets[s.key] || []).forEach(t => byId[itemId(s.key, t)] = t));
+  // simpler: attach swipe with closure over matching item by title
+  document.querySelectorAll('.card[data-sec]').forEach(el => {
+    const sec = el.dataset.sec;
+    const title = el.querySelector('.t')?.textContent || '';
+    const t = (sets[sec] || []).find(x => (x.title || x.name) === title && !HIDDEN.has(itemId(sec, x)));
+    if (t && sec !== 'docs') cardSwipe(el, sec, t);
+    if (t && sec === 'docs') cardSwipe(el, sec, t); // docs too, but link tap still works (swipe vs tap distinguished by movement)
+  });
+
+  $('#updated').textContent = 'Synced ' + rel(d.updated_at) + '  ·  every 15 min  ·  tap to reload';
+  $('#foot').innerHTML = d.status_doc_url ? `<a href="${esc(d.status_doc_url)}" target="_blank" rel="noopener">Full status doc${EXT}</a>` : '';
+  renderDigest(d, counts);
+}
+function collectHidden(d) {
+  const out = [];
+  d.waiting.forEach(t => { const id = itemId('waiting', t); if (HIDDEN.has(id)) out.push({...t, _hid: id}); });
+  d.progress.forEach(t => { ['progress','watching'].forEach(sec => { const id = itemId(sec, t); if (HIDDEN.has(id)) out.push({...t, _hid: id}); }); });
+  d.reminders.forEach(t => { const id = itemId('reminders', t); if (HIDDEN.has(id)) out.push({...t, _hid: id}); });
+  d.docs.forEach(t => { const id = itemId('docs', t); if (HIDDEN.has(id)) out.push({...t, _hid: id}); });
+  d.done.forEach(t => { const id = itemId('done', t); if (HIDDEN.has(id)) out.push({...t, _hid: id}); });
+  return out;
+}
+function sect(key, count, inner) {
+  const s = SECTIONS.find(x => x.key === key);
+  const sortBtn = s.sortable ? `<button class="sortbtn" onclick="cycleSort('${key}')">${SORTICON} ${(SORTS[key]||'new')==='new'?'NEWEST':'OLDEST'}</button>` : `<span class="count" style="margin-left:auto">${count}</span>`;
+  const e = EMPTY[key];
+  return `<section><div class="sect-label"><span class="dot" style="background:${s.color}"></span><span class="name">${s.label}</span>${s.sortable ? `<span class="count">${count}</span>` : ''}${sortBtn}</div>${inner || `<div class="empty"><span class="big">${e[0]}</span>${e[1]}</div>`}</section>`;
+}
+
+function renderDigest(d, counts) {
+  const day = new Date().toLocaleDateString([], {weekday: 'long'});
+  const landedToday = d.done.filter(t => (Date.now() - new Date(t.updated_at)) < 864e5).length;
+  const parts = [];
+  if (landedToday) parts.push(landedToday + ' landed today');
+  parts.push(counts.progress + counts.watching + ' moving');
+  if (counts.waiting) parts.push(counts.waiting + ' need' + (counts.waiting === 1 ? 's' : '') + ' you');
+  $('#digest').textContent = day + ': ' + parts.join(' · ');
+}
+
+// since-you-were-away
+function checkAway(d) {
+  try {
+    const seen = JSON.parse(localStorage.getItem('mc_seen') || 'null');
+    const snap = { done: d.done.map(t => t.id || t.title), waiting: d.waiting.map(t => t.id), at: Date.now() };
+    if (seen && seen.at && Date.now() - seen.at > 30 * 60e3) {
+      const newDone = snap.done.filter(x => !seen.done.includes(x)).length;
+      const newWaiting = snap.waiting.filter(x => !seen.waiting.includes(x)).length;
+      if (newDone || newWaiting) {
+        const bits = [];
+        if (newDone) bits.push(newDone + ' landed');
+        if (newWaiting) bits.push(newWaiting + ' new thing' + (newWaiting > 1 ? 's' : '') + ' need' + (newWaiting > 1 ? '' : 's') + ' you');
+        $('#away').innerHTML = 'Since ' + new Date(seen.at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) + ': ' + bits.join(' · ') + '<span class="sub">Tap to dismiss</span>';
+        $('#away').style.display = 'block';
+        if (newDone) setTimeout(() => sparkle(innerWidth / 2, 170), 500);
+      }
+    }
+    localStorage.setItem('mc_seen', JSON.stringify(snap));
+  } catch (e) {}
+}
+$('#away').onclick = () => $('#away').style.display = 'none';
+
+async function load() {
+  $('#ptr').classList.add('on');
+  try {
+    const r = await fetch(DATA_URL + '?t=' + Date.now(), {cache: 'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const fresh = await r.json();
+    const isNewer = lastDataUpdated && fresh.updated_at !== lastDataUpdated;
+    DATA = fresh; lastDataUpdated = fresh.updated_at;
+    $('#err').style.display = 'none';
+    render(); checkAway(fresh);
+    if (isNewer) {
+      $('#livepill').classList.add('fresh');
+      setTimeout(() => $('#livepill').classList.remove('fresh'), 2600);
+    }
+  } catch (e) {
+    if (DATA) { $('#err').textContent = 'Refresh failed — showing last synced data.'; $('#err').style.display = 'block'; render(); }
+    else $('#updated').textContent = 'Could not sync. Pull down to retry.';
+  } finally {
+    setTimeout(() => $('#ptr').classList.remove('on'), 350);
+  }
+}
+
+$('#q').addEventListener('input', e => { QUERY = e.target.value.trim().toLowerCase(); render(); });
+$('#updated').addEventListener('click', load);
+
+let touchY = null;
+window.addEventListener('touchstart', e => { if (window.scrollY <= 0 && !e.target.closest('.card')) touchY = e.touches[0].clientY; }, {passive: true});
+window.addEventListener('touchmove', e => {
+  if (touchY === null) return;
+  if (e.touches[0].clientY - touchY > 75 && window.scrollY <= 0) { touchY = null; load(); }
+}, {passive: true});
+window.addEventListener('touchend', () => touchY = null);
+
+load();
+setInterval(load, 120000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+</script>
+</body>
+</html>
