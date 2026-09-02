@@ -610,7 +610,7 @@ function closeDetail() {
   document.body.style.overflow = '';
 }
 $('#backdrop').onclick = closeDetail;
-$('#replysend').onclick = asyn$('#replysend').onclick = async () => {
+$('#replysend').onclick = async () => {
   const txt = $('#replytext').value.trim();
   if (!txt || !SHEET_CTX) return;
   const body = 'Re: ' + SHEET_CTX.title.slice(0, 80) + '\n\n' + txt;
