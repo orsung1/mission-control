@@ -89,7 +89,7 @@
   .chip.area { font-size: 11.5px; padding: 6px 11px; color: var(--text3); }
   .chip.area.active { background: rgba(255,255,255,.12); color: var(--text); border-color: rgba(255,255,255,.2); }
 
-  section { margin-bottom: 30px; }
+  section { margin-bottom: 24px; }
   .sect-label { display: flex; align-items: center; gap: 8px; margin: 0 3px 11px; }
   .sect-label .dot { width: 6px; height: 6px; border-radius: 50%; }
   .sect-label .name { font-size: 11px; font-weight: 650; letter-spacing: .11em; text-transform: uppercase; color: var(--text2); }
@@ -100,7 +100,7 @@
 
   .card-wrap { position: relative; margin-bottom: 9px; overflow: hidden; border-radius: 15px; }
   .card { display: block; position: relative; background: var(--card); border: 1px solid var(--card-border);
-    border-radius: 15px; padding: 14px 16px;
+    border-radius: 15px; padding: 12px 15px;
     text-decoration: none; color: inherit; cursor: pointer;
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     transition: background .15s, border-color .15s, transform .18s, opacity .18s;
@@ -189,6 +189,55 @@
     border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 7px 14px; cursor: pointer; }
   .sheet .actrow button.pinned { color: #7cc7ff; border-color: rgba(124,199,255,.35); }
 
+
+  .card.compact { padding: 10px 13px; border-radius: 13px; }
+  .card.compact .t { font-size: 13px; padding-right: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card.compact .meta { margin-top: 4px; }
+  .card.compact .acts { margin-top: 6px; }
+  .acts { flex-wrap: wrap; }
+  .acts button.act { color: #8ab8ff; border-color: rgba(110,150,255,.22); background: rgba(110,150,255,.07); }
+  .acts button.act[data-act="Done"] { color: #4ade80; border-color: rgba(74,222,128,.28); background: rgba(74,222,128,.07); }
+  .acts button.act[data-act="Snooze"] { color: #fbbf24; border-color: rgba(251,191,36,.28); background: rgba(251,191,36,.07); }
+  .acts button.act[data-act="Kill"] { color: #fb7185; border-color: rgba(244,63,94,.25); background: rgba(244,63,94,.07); }
+  .foc-note { font-size: 12px; color: var(--text3); text-align: center; padding: 4px 0 10px; font-weight: 450; }
+  .foc-note b { color: var(--text2); font-weight: 600; }
+
+
+  .vtoggle { display: flex; justify-content: flex-end; margin: -4px 0 12px; }
+  .vtoggle button { font: inherit; font-size: 11px; font-weight: 600; color: var(--text3); background: var(--card); border: 1px solid var(--card-border); padding: 6px 14px; cursor: pointer; }
+  .vtoggle button:first-child { border-radius: 9px 0 0 9px; border-right: none; }
+  .vtoggle button:last-child { border-radius: 0 9px 9px 0; }
+  .vtoggle button.active { background: #ececef; color: #0a0a0c; border-color: transparent; }
+
+  .board { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -18px; padding: 2px 18px 10px; scrollbar-width: none; }
+  .board::-webkit-scrollbar { display: none; }
+  .bcol { flex: 0 0 76%; max-width: 290px; scroll-snap-align: start; background: rgba(255,255,255,.018); border: 1px solid var(--card-border); border-radius: 16px; padding: 10px; min-height: 180px; transition: border-color .15s, background .15s; }
+  @media (min-width: 720px) { .bcol { flex: 1 1 0; max-width: none; } }
+  .bcol.hot { border-color: rgba(124,199,255,.55); background: rgba(124,199,255,.06); }
+  .bcol .bh { display: flex; align-items: center; gap: 7px; margin: 2px 2px 10px; font-size: 10.5px; font-weight: 650; letter-spacing: .11em; text-transform: uppercase; color: var(--text2); }
+  .bcard { background: rgba(255,255,255,.04); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+  .bcard:active { cursor: grabbing; }
+  .bcard.dragging { opacity: .35; }
+  .bcard.moved { border-style: dashed; border-color: rgba(124,199,255,.4); }
+  .bcard .bt { font-size: 12.5px; font-weight: 550; line-height: 1.35; letter-spacing: -0.008em; }
+  .bcard .bm { font-size: 10.5px; color: var(--text3); margin-top: 4px; font-weight: 500; }
+  .bempty { font-size: 11px; color: var(--text3); text-align: center; padding: 14px 4px; border: 1px dashed rgba(255,255,255,.09); border-radius: 10px; }
+  .drag-ghost { position: fixed; z-index: 80; pointer-events: none; opacity: .92; box-shadow: 0 14px 34px rgba(0,0,0,.6); transform: rotate(1.5deg); background: #17171c; }
+
+
+  @media (min-width: 900px) {
+    .wrap { max-width: 1180px; padding: 0 32px 64px; }
+    h1 { font-size: 24px; }
+    .mark { width: 38px; height: 38px; }
+    .digest { font-size: 13.5px; }
+    .card { padding: 15px 18px; }
+    section { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+    section .sect-label, section .empty { grid-column: 1 / -1; }
+    .board { overflow-x: visible; margin: 0; padding: 2px 0 10px; }
+    .bcol { flex: 1 1 0; max-width: none; }
+    .searchbox input { font-size: 15px; }
+  }
+
   .skel { border-radius: 15px; height: 86px; margin-bottom: 9px; background: linear-gradient(100deg, rgba(255,255,255,.04) 40%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.04) 60%); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; }
   @keyframes shimmer { to { background-position: -200% 0; } }
 </style>
@@ -212,6 +261,7 @@
   </div></div>
   <div class="chips" id="chips"></div>
   <div class="chips areas" id="areachips"></div>
+  <div class="vtoggle" id="vtoggle"></div>
   <div id="err"></div>
   <main id="main"></main>
   <footer id="foot"></footer>
@@ -250,7 +300,9 @@ async function fetchData() {
   const plain = await crypto.subtle.decrypt({name: 'AES-GCM', iv}, key, ct);
   return JSON.parse(new TextDecoder().decode(plain));
 }
-let DATA = null, FILTER = 'all', AREA = 'all', QUERY = '';
+let DATA = null, FILTER = 'focus', AREA = 'all', QUERY = '';
+let VIEW = localStorage.getItem('mc_view') || (matchMedia('(min-width: 900px)').matches ? 'board' : 'list');
+let MCOL = JSON.parse(localStorage.getItem('mc_col') || '{}');
 let HIDDEN = new Set(JSON.parse(localStorage.getItem('mc_hidden') || '[]'));
 let PINNED = new Set(JSON.parse(localStorage.getItem('mc_pinned') || '[]'));
 let SORTS = JSON.parse(localStorage.getItem('mc_sorts') || '{}');
@@ -322,7 +374,23 @@ function togglePin(sec, t) {
 function actsHtml(sec, t) {
   const id = itemId(sec, t);
   const p = PINNED.has(id);
-  return `<div class="acts"><button class="${p ? 'pinned' : ''}" data-pin="${esc(id)}" data-sec="${sec}">${p ? 'Unpin' : 'Pin'}</button><button data-del="${esc(id)}" data-sec="${sec}">Delete</button></div>`;
+  const title = esc(t.title || t.name || '');
+  let acts = '';
+  if (sec === 'waiting') acts = `<button class="act" data-act="Done" data-title="${title}">Done</button><button class="act" data-act="Snooze" data-title="${title}">Snooze</button><button class="act" data-act="Kill" data-title="${title}">Kill</button>`;
+  else if (sec === 'progress' || sec === 'watching') acts = `<button class="act" data-act="Nudge" data-title="${title}">Nudge</button>`;
+  return `<div class="acts">${acts}<button class="${p ? 'pinned' : ''}" data-pin="${esc(id)}" data-sec="${sec}">${p ? 'Unpin' : 'Pin'}</button><button data-del="${esc(id)}" data-sec="${sec}">Delete</button></div>`;
+}
+function toastPlain(msg, ms) {
+  $('#toastmsg').textContent = msg;
+  $('#toastundo').style.visibility = 'hidden';
+  $('#toast').classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('#toast').classList.remove('on'); $('#toastundo').style.visibility = ''; }, ms || 3200);
+}
+async function actHandoff(act, title) {
+  const body = act + ': ' + title;
+  if (navigator.maxTouchPoints > 0) location.href = 'sms:' + REPLY_NUMBER + '?&body=' + encodeURIComponent(body);
+  else { try { await navigator.clipboard.writeText(body); } catch (e) {} toastPlain('Copied - paste it into your Instinct text thread to send'); }
 }
 function cycleSort(key) {
   const order = ['new','old'];
@@ -415,7 +483,10 @@ function render() {
   const counts = { waiting: vis('waiting').length, progress: vis('progress').length, watching: vis('watching').length, reminders: vis('reminders').length, docs: vis('docs').length, done: vis('done').length, hidden: sets.hidden.length };
   const total = counts.waiting + counts.progress + counts.watching + counts.reminders + counts.docs + counts.done;
 
-  $('#chips').innerHTML = [{key:'all',label:'All',n:total}, ...SECTIONS.map(s=>({key:s.key,label:s.label,n:counts[s.key],color:s.color}))]
+  let pinnedN = 0, pinnedWaiting = 0;
+  ['waiting','progress','watching','reminders','docs','done'].forEach(k => vis(k).forEach(t => { if (PINNED.has(itemId(k, t))) { pinnedN++; if (k === 'waiting') pinnedWaiting++; } }));
+  const focusN = pinnedN + counts.waiting - pinnedWaiting;
+  $('#chips').innerHTML = [{key:'focus',label:'Focus',n:focusN,color:'#7cc7ff'}, {key:'all',label:'All',n:total}, ...SECTIONS.map(s=>({key:s.key,label:s.label,n:counts[s.key],color:s.color}))]
     .map(c => `<div class="chip ${FILTER===c.key?'active':''}" data-k="${c.key}">${c.color?`<span class="cdot" style="background:${c.color}"></span>`:''}${c.label}<span class="n">${c.n}</span></div>`).join('');
   document.querySelectorAll('#chips .chip').forEach(el => el.onclick = () => { FILTER = el.dataset.k; render(); });
 
@@ -424,8 +495,26 @@ function render() {
     .map(x => `<div class="chip area ${AREA===x.a?'active':''}" data-a="${esc(x.a)}">${x.a === 'all' ? 'All areas' : esc(x.a)}</div>`).join('');
   document.querySelectorAll('#areachips .chip').forEach(el => el.onclick = () => { AREA = el.dataset.a; render(); });
 
+  renderVToggle();
+  $('#chips').style.display = VIEW === 'board' ? 'none' : '';
+
   let html = '';
   const show = k => FILTER === 'all' || FILTER === k;
+
+  if (VIEW === 'board') {
+    html = renderBoard(sets, vis);
+  } else if (FILTER === 'focus') {
+    const pinnedItems = [];
+    ['waiting','progress','watching','reminders','docs','done'].forEach(k => {
+      sortItems(k, vis(k)).forEach(t => {
+        if (PINNED.has(itemId(k, t)) && match((t.title || t.name || '') + ' ' + (t.description || t.summary || '')) && inArea(t)) pinnedItems.push({k, t});
+      });
+    });
+    const waitItems = sortItems('waiting', vis('waiting').filter(t => !PINNED.has(itemId('waiting', t)) && match(t.title + ' ' + (t.description || '')) && inArea(t)));
+    html += focusSect('Pinned', '#7cc7ff', pinnedItems.length, pinnedItems.map(x => compactCard(x.k, x.t)).join(''), 'Nothing pinned', 'Pin anything from the full list and it lives here.');
+    html += focusSect('Needs you', 'var(--waiting)', waitItems.length, waitItems.map(t => compactCard('waiting', t)).join(''), 'All clear', 'Nothing needs you right now.');
+    html += '<div class="foc-note">Everything else is behind the chips above - <b>All</b> shows the full board.</div>';
+  } else {
   const sortLabel = k => (SORTS[k] || 'new') === 'new' ? 'NEWEST' : 'OLDEST';
 
   if (show('waiting')) {
@@ -472,12 +561,17 @@ function render() {
       <div class="card hidden-card"><div class="t">${esc(t.title || t.name)}</div>
       <div class="restore" data-restore="${esc(t._hid)}">Restore</div></div>`).join(''));
   }
+  }
   $('#main').innerHTML = html || '<div class="empty"><span class="big">Nothing matches</span>Try a different search or filter.</div>';
   document.querySelectorAll('[data-restore]').forEach(el => el.onclick = () => restore(el.dataset.restore));
   document.querySelectorAll('[data-pin]').forEach(el => el.onclick = e => {
     e.stopPropagation(); e.preventDefault();
     const t = (sets[el.dataset.sec] || []).find(x => itemId(el.dataset.sec, x) === el.dataset.pin);
     if (t) togglePin(el.dataset.sec, t);
+  });
+  document.querySelectorAll('[data-act]').forEach(el => el.onclick = e => {
+    e.stopPropagation(); e.preventDefault();
+    actHandoff(el.dataset.act, el.dataset.title);
   });
   document.querySelectorAll('[data-del]').forEach(el => el.onclick = e => {
     e.stopPropagation(); e.preventDefault();
@@ -498,9 +592,136 @@ function render() {
     if (t && sec !== 'docs') el.addEventListener('click', () => { if (!el._swiped) openDetail(sec, t); });
   });
 
+  if (VIEW === 'board') {
+    const rawOf = t => t.id || t.url || ((t.name || '') + '|' + (t.next_fire || ''));
+    document.querySelectorAll('.bcard').forEach(el => {
+      const sec = el.dataset.sec;
+      const t = (sets[sec] || []).find(x => rawOf(x) === el.dataset.raw);
+      if (!t) return;
+      boardDrag(el, el.dataset.raw, el.dataset.colCur, t.title || t.name || '');
+      el.addEventListener('click', () => { if (!el._dragged) openDetail(sec, t); });
+    });
+  }
+
   $('#updated').textContent = 'Synced ' + rel(d.updated_at) + '  ·  every 15 min  ·  tap to reload';
   $('#foot').innerHTML = d.status_doc_url ? `<a href="${esc(d.status_doc_url)}" target="_blank" rel="noopener">Full status doc${EXT}</a>` : '';
   renderDigest(d, counts);
+}
+function renderVToggle() {
+  $('#vtoggle').innerHTML = `<button data-v="list" class="${VIEW === 'list' ? 'active' : ''}">List</button><button data-v="board" class="${VIEW === 'board' ? 'active' : ''}">Board</button>`;
+  document.querySelectorAll('#vtoggle button').forEach(b => b.onclick = () => { VIEW = b.dataset.v; localStorage.setItem('mc_view', VIEW); render(); });
+}
+function renderBoard(sets, vis) {
+  const raw = t => t.id || t.url || ((t.name || '') + '|' + (t.next_fire || ''));
+  const cols = [
+    {key: 'waiting', label: 'Needs you', color: 'var(--waiting)'},
+    {key: 'progress', label: 'In progress', color: 'var(--progress)'},
+    {key: 'watching', label: 'Watching', color: 'var(--watching)'},
+    {key: 'done', label: 'Done', color: '#4ade80'},
+  ];
+  const buckets = {waiting: [], progress: [], watching: [], done: []};
+  ['waiting', 'progress', 'watching', 'done'].forEach(k => {
+    vis(k).forEach(t => {
+      if (!match((t.title || t.name || '') + ' ' + (t.description || t.summary || '')) || !inArea(t)) return;
+      const ov = MCOL[raw(t)];
+      buckets[ov && buckets[ov] !== undefined ? ov : k].push({sec: k, t});
+    });
+  });
+  let h = '<div class="board">';
+  cols.forEach(c => {
+    h += `<div class="bcol" data-col="${c.key}"><div class="bh"><span style="background:${c.color};width:6px;height:6px;border-radius:50%;display:inline-block"></span>${c.label}<span style="margin-left:auto;color:var(--text3)">${buckets[c.key].length}</span></div>`;
+    buckets[c.key].forEach(x => {
+      const title = esc(x.t.title || x.t.name || '');
+      const moved = MCOL[raw(x.t)] && MCOL[raw(x.t)] !== x.sec;
+      h += `<div class="bcard${moved ? ' moved' : ''}" data-raw="${esc(raw(x.t))}" data-sec="${x.sec}" data-col-cur="${c.key}"><div class="bt">${title}</div><div class="bm">${x.t.area ? esc(x.t.area) + ' · ' : ''}${c.key === 'done' ? rel(x.t.updated_at) : (x.t.next_fire ? 'next ' + rel(x.t.next_fire) : rel(x.t.created_at))}</div></div>`;
+    });
+    if (!buckets[c.key].length) h += '<div class="bempty">Drop cards here</div>';
+    h += '</div>';
+  });
+  return h + '</div>';
+}
+function boardDrag(el, rawKey, fromCol, title) {
+  el.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const sx = e.clientX, sy = e.clientY;
+    let dragging = false, cancelled = false, ghost = null;
+    const lp = setTimeout(activate, e.pointerType === 'touch' ? 260 : 0);
+    function activate() {
+      if (cancelled) return;
+      dragging = true;
+      ghost = el.cloneNode(true);
+      ghost.classList.add('drag-ghost');
+      ghost.style.width = el.offsetWidth + 'px';
+      document.body.appendChild(ghost);
+      position(e);
+      el.classList.add('dragging');
+      if (navigator.vibrate) navigator.vibrate(8);
+    }
+    function position(ev) {
+      ghost.style.left = (ev.clientX - el.offsetWidth / 2) + 'px';
+      ghost.style.top = (ev.clientY - 20) + 'px';
+    }
+    function hot(ev) {
+      document.querySelectorAll('.bcol').forEach(c => {
+        const r = c.getBoundingClientRect();
+        c.classList.toggle('hot', ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom);
+      });
+    }
+    function move(ev) {
+      if (!dragging) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 10) { cancel(); }
+        return;
+      }
+      ev.preventDefault();
+      position(ev); hot(ev);
+    }
+    function up(ev) {
+      clearTimeout(lp);
+      cleanup();
+      if (!dragging) return;
+      el._dragged = true; setTimeout(() => { el._dragged = false; }, 90);
+      const target = [...document.querySelectorAll('.bcol')].find(c => {
+        const r = c.getBoundingClientRect();
+        return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+      });
+      if (target && target.dataset.col !== fromCol) {
+        MCOL[rawKey] = target.dataset.col;
+        localStorage.setItem('mc_col', JSON.stringify(MCOL));
+        render();
+        actHandoff(target.dataset.col === 'done' ? 'Done' : (target.dataset.col === 'waiting' ? 'Nudge' : 'Snooze'), title);
+      } else el.classList.remove('dragging');
+    }
+    function cancel() { cancelled = true; clearTimeout(lp); cleanup(); }
+    function cleanup() {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', cancel);
+      if (ghost) { ghost.remove(); ghost = null; }
+      el.classList.remove('dragging');
+      document.querySelectorAll('.bcol.hot').forEach(c => c.classList.remove('hot'));
+    }
+    window.addEventListener('pointermove', move, {passive: false});
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', cancel);
+  });
+}
+function compactCard(sec, t) {
+  const s = SECTIONS.find(x => x.key === sec);
+  const title = esc(t.title || t.name || '');
+  const dot = `<span style="background:${s.color};width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:7px"></span>`;
+  let meta = '';
+  if (sec === 'waiting') meta = `${t.area ? `<span class="tag">${esc(t.area)}</span>` : ''}${t.blocked ? '<span class="tag" style="color:#fca5a5;background:rgba(248,113,113,.1)">Blocked</span>' : ''}<span class="r">${rel(t.created_at)}</span>`;
+  else if (sec === 'progress') meta = `${t.area ? `<span class="tag">${esc(t.area)}</span>` : ''}<span>${t.next_fire ? 'Next check ' + absTime(t.next_fire) : 'Active now'}</span>`;
+  else if (sec === 'watching') meta = `<span>${t.next_fire ? 'Next check ' + absTime(t.next_fire) : 'Running'}</span><span class="r"><span class="tag">Standing</span></span>`;
+  else if (sec === 'reminders') meta = `<span style="color:var(--remind)">${absTime(t.next_fire)}</span><span class="r">${esc(t.cadence || '')}</span>`;
+  else if (sec === 'docs') meta = `<span class="tag" style="color:var(--docs)">${esc(t.folder || 'Drive')}</span><span class="r">${rel(t.modified)}</span>`;
+  else if (sec === 'done') meta = `${t.area ? `<span class="tag">${esc(t.area)}</span>` : ''}<span class="r">${rel(t.updated_at)}</span>`;
+  const inner = `<div class="t">${dot}${title}</div><div class="meta">${meta}</div>${actsHtml(sec, t)}`;
+  if (sec === 'docs') return `<a class="card compact" data-sec="docs" href="${esc(t.url)}" target="_blank" rel="noopener">${inner}</a>`;
+  return `<div class="card compact${sec === 'done' ? ' done-card' : ''}${PINNED.has(itemId(sec, t)) ? ' is-pinned' : ''}" data-sec="${sec}">${inner}</div>`;
+}
+function focusSect(label, color, count, inner, emptyBig, emptySub) {
+  return `<section><div class="sect-label"><span class="dot" style="background:${color}"></span><span class="name">${label}</span><span class="count" style="margin-left:auto">${count}</span></div>${inner || `<div class="empty"><span class="big">${emptyBig}</span>${emptySub}</div>`}</section>`;
 }
 function collectHidden(d) {
   const out = [];
