@@ -179,7 +179,24 @@
 <div id="toast"><span id="toastmsg"></span><button id="toastundo">Undo</button></div>
 <canvas id="confetti"></canvas>
 <script>
-const DATA_URL = 'https://mc-fb9dcbda391a6168.netlify.app/data.json';
+const DATA_URL = 'd.json'; // same-origin ciphertext; key arrives in URL fragment (#k=...)
+async function loadKey() {
+  const m = location.hash.match(/k=([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  const b64 = m[1] + '==';
+  const raw = Uint8Array.from(atob(b64.replace(/-/g,'+').replace(/_/g,'/')), c => c.charCodeAt(0));
+  return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+}
+async function fetchData() {
+  const key = await loadKey();
+  if (!key) throw new Error('nokey');
+  const r = await fetch(DATA_URL + '?t=' + Date.now(), {cache: 'no-store'});
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const buf = new Uint8Array(await r.arrayBuffer());
+  const iv = buf.slice(0, 12), ct = buf.slice(12);
+  const plain = await crypto.subtle.decrypt({name: 'AES-GCM', iv}, key, ct);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
 let DATA = null, FILTER = 'all', AREA = 'all', QUERY = '';
 let HIDDEN = new Set(JSON.parse(localStorage.getItem('mc_hidden') || '[]'));
 let SORTS = JSON.parse(localStorage.getItem('mc_sorts') || '{}');
@@ -456,9 +473,7 @@ $('#away').onclick = () => $('#away').style.display = 'none';
 async function load() {
   $('#ptr').classList.add('on');
   try {
-    const r = await fetch(DATA_URL + '?t=' + Date.now(), {cache: 'no-store'});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const fresh = await r.json();
+    const fresh = await fetchData();
     const isNewer = lastDataUpdated && fresh.updated_at !== lastDataUpdated;
     DATA = fresh; lastDataUpdated = fresh.updated_at;
     $('#err').style.display = 'none';
@@ -469,6 +484,7 @@ async function load() {
     }
   } catch (e) {
     if (DATA) { $('#err').textContent = 'Refresh failed — showing last synced data.'; $('#err').style.display = 'block'; render(); }
+    else if (e.message === 'nokey') $('#updated').textContent = 'Open this app from your personal link (it carries the access key).';
     else $('#updated').textContent = 'Could not sync. Pull down to retry.';
   } finally {
     setTimeout(() => $('#ptr').classList.remove('on'), 350);
