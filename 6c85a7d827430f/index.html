@@ -192,7 +192,9 @@ async function fetchData() {
   if (!key) throw new Error('nokey');
   const r = await fetch(DATA_URL + '?t=' + Date.now(), {cache: 'no-store'});
   if (!r.ok) throw new Error('HTTP ' + r.status);
-  const buf = new Uint8Array(await r.arrayBuffer());
+  const b64 = (await r.text()).trim();
+  const bin = atob(b64);
+  const buf = Uint8Array.from(bin, c => c.charCodeAt(0));
   const iv = buf.slice(0, 12), ct = buf.slice(12);
   const plain = await crypto.subtle.decrypt({name: 'AES-GCM', iv}, key, ct);
   return JSON.parse(new TextDecoder().decode(plain));
